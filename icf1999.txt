@@ -1,0 +1,98 @@
+{if:{js:let user = discord.user.username;
+let bannedUsers = ['isaq0095', 'mpgarv', 'unkwornnameagainbot'];
+console.log(bannedUsers.includes(user));}|=|true|then:{exit:FAHHHH}}
+{if:{js:let args = discord.variables.__args; 
+console.log(args == `help` || args.length <= 5);}|=|true|then:{js:console.log(JSON.stringify({"embeds":[{"title":`IHTX Custom FFmpeg — TME1999's Take — v1.0.5`,"color":0xf26900,"author":{"name":`{usertag}`,"icon_url": `{avatar}`},"fields":[{"name":`The syntax for this tag is:`,"value":`\`\`\`\n.t {tagname} <export count> <duration> <no trim?> <export file format> <output file format> <...code> \n\`\`\``},{"name":`Tag Overview:`,"value":`This tag lets you make a custom "I Hate The [X]" video with FFmpeg, just like Holly Hewko's \`icf+\` tag.`},{"name":`Argument List:`,"value":`\`export count\` - Specify the amount of exports. If this number is negative, the exports will be in reverse order.\n\n\`duration\` - Specify the duration for each export.\n\n\`no trim?\` - Specify whether or not to trim the exports to the given duration.\n\n\`export file format\` - Specify the file format for each export.\n\n\`output file format\` - Specify the file format for the final video.\n\n\`code\` - FFmpeg code.`},{"name":`What's New?`,"value":`**Jan 3, 2026:**\n- Re-added legacy TV Simulator displacement map.`}],"footer":{"text":`This tag was authored by TME1999!`,"icon_url":`https://cdn.discordapp.com/attachments/1526068771947806832/1527853214920216626/meme.c0f493c5.png?ex=6a5c2bb0&is=6a5ada30&hm=ed464093525b79a71832ba6cb7d2bf3aa503254be5336668a4b75cbc6c493a1d&`}}]}));}|else:{set:s|{unix}}
+{set:string|{substring:{args}|{indexof:{arg:5}|{args}}}}
+ 
+{set:tier|{traversejson:premium_tier|{json.guild}}}
+ 
+{set:bytes|{math:{if:{get:tier}|=|3|then:100|else:{if:{get:tier}|=|2|then:50|else:{if:{get:tier}|=|1|then:10|else:10}}}*(1024^2)}}
+ 
+{set:code|load {media}
+# load https://file.garden/aTXso15ukD3mnuPI/resized.mp4
+ 
+vidlen=$(ffprobe -i $FILE_1 -show_entries format=duration -v quiet -of csv="p=0")
+dur=$(awk -v vidlen="$vidlen" 'BEGIN\u007b printf "%.8f", {arg:1}\u007d')
+ 
+mkdir ./displacemaps
+ffmpeg -hide_banner -loglevel quiet -i "https://file.garden/aTXso15ukD3mnuPI/tv_sim_displacement_map.mov" -c:v h264 -crf 28 -preset ultrafast -q:v 1 ./displacemaps/tvsimulator.mov
+curl -s "https://files.catbox.moe/wu54df.mp4" -o "./displacemaps/tvsimulator.mp4"
+ffmpeg -hide_banner -loglevel quiet -i $FILE_2 -vf scale=4:4,setsar=1:1,"geq=r=128:g=128:b=128" -pix_fmt yuv420p -preset ultrafast -an -t 0.03 a.mp4
+ 
+ffmpeg -hide_banner -loglevel quiet -f lavfi -i "nullsrc=s=4x4,geq=r=128:g=128:b=128" b.png -preset ultrafast
+ 
+ffmpeg -hide_banner -loglevel quiet -i "https://file.garden/aTXso15ukD3mnuPI/hue_0to360.mkv" -c:v png -movflags +faststart hslhue_0to360.mkv -preset ultrafast
+ffmpeg -hide_banner -loglevel quiet -i "https://file.garden/aTXso15ukD3mnuPI/hue_0to-360.mkv" -c:v png -movflags +faststart hslhue_0to-360.mkv -preset ultrafast
+ 
+curl -s "https://file.garden/aTXso15ukD3mnuPI/Arial_Bold.ttf" -o ./arialbold.ttf
+curl -s "https://file.garden/aTXso15ukD3mnuPI/Arial.TTF" -o ./arial.ttf
+ 
+ffmpeg -hide_banner -loglevel quiet -y -stream_loop -1 -i $FILE_1 -c:v h264 -q:v 1 -preset ultrafast -c:a flac -t $dur -movflags +faststart 0.mp4
+ 
+extension={if:{arg:4}|=|default|then:$(basename $\u007bFILE_1##*.\u007d)|else:'{arg:4}'}
+sr=$(ffprobe -v error -select_streams a:0 -show_entries stream=sample_rate -of default=nokey=1:noprint_wrappers=1 0.mp4)
+fr=$(ffprobe -v error -select_streams v:0 -show_entries stream=r_frame_rate -of default=nokey=1:noprint_wrappers=1 0.mp4)
+d=$(ffprobe -i 0.mp4 -show_entries format=duration -v quiet -of csv="p=0")
+w=$(ffprobe -v error -select_streams v:0 -show_entries stream=width -of default=nw=1:nk=1 0.mp4)
+h=$(ffprobe -v error -select_streams v:0 -show_entries stream=height -of default=nw=1:nk=1 0.mp4)
+fc=$(ffprobe -v error -select_streams v:0 -show_entries stream=nb_frames -of default=nokey=1:noprint_wrappers=1 0.mp4)
+e=$(ffprobe -i hslhue_0to360.mkv -show_entries format=duration -v quiet -of csv="p=0")
+ 
+output=$(echo ./output/thatmiracleihtx1999_custom.$extension)
+ 
+for i in $(seq -180 1 180); do
+    magick hald:6 -modulate 100,100,%[fx:$i/1.8+100] -strip -quality 1 hslhue_$i.ppm
+  done
+ 
+ffmpeg -hide_banner -loglevel quiet -stream_loop -1 -i "https://file.garden/aTXso15ukD3mnuPI/nbfx_earthquake.mp4" -vf fps=$fr,scale=$w:$h,setsar=1:1,vidstabdetect=shakiness=10:accuracy=1:mincontrast=0:show=0:result="newbluefx_earthquake.trf" -c:v h264 -preset ultrafast -t $d -movflags +faststart -f null -
+ffmpeg -hide_banner -loglevel quiet -stream_loop -1 -i "https://file.garden/aTXso15ukD3mnuPI/91dxi_shake.mp4" -vf fps=$fr,scale=$w:$h,setsar=1:1,vidstabdetect=shakiness=10:accuracy=15:mincontrast=0:stepsize=1:show=0:result="91dxi_shake.trf" -c:v h264 -preset ultrafast -t $d -movflags +faststart -f null -
+ffmpeg -hide_banner -loglevel quiet -stream_loop -1 -i "https://file.garden/aTXso15ukD3mnuPI/3dxi_shake.mp4" -vf fps=$fr,scale=$w:$h,setsar=1:1,vidstabdetect=shakiness=10:accuracy=15:mincontrast=0:stepsize=1:show=0:result="3dxi_shake.trf" -c:v h264 -preset ultrafast -t $d -movflags +faststart -f null -
+ffmpeg -hide_banner -loglevel quiet -stream_loop -1 -i "https://file.garden/aTXso15ukD3mnuPI/634dxi_shake.mp4" -vf fps=$fr,scale=$w:$h,setsar=1:1,vidstabdetect=shakiness=10:accuracy=15:mincontrast=0:stepsize=1:show=0:result="634dxi_shake.trf" -c:v h264 -preset ultrafast -t $d -movflags +faststart -f null -
+ 
+if [ "{arg:2}" == "true" -o "{arg:2}" == "yes" ]; then
+   ffmpeg -hide_banner -loglevel error -y -i "0.mp4" {get:string} -movflags +faststart 1.{arg:3}
+   for i in $(seq 1 1 {abs:{arg:0}}); do
+      ffmpeg -hide_banner -loglevel error -y -i "$i.{arg:3}" {get:string} $((i+1)).{arg:3} -movflags +faststart
+   done
+else
+   ffmpeg -hide_banner -loglevel error -y -stream_loop 1 -i "0.mp4" {get:string} -t $dur -movflags +faststart 1.{arg:3}
+   for i in $(seq 1 1 {abs:{arg:0}}); do
+      ffmpeg -hide_banner -loglevel error -y -stream_loop 1 -i "$i.{arg:3}" {get:string} -t $dur -movflags +faststart $((i+1)).{arg:3}
+   done
+fi
+ 
+if [ {arg:0} -lt 0 ]; then
+   for i in $(seq {abs:{arg:0}} -1 1); do
+      echo "file '$i.{arg:3}'"
+   done
+else
+   for i in $(seq 1 1 {abs:{arg:0}}); do
+      echo "file '$i.{arg:3}'"
+   done
+fi >> concat.txt
+ 
+ffmpeg -hide_banner -loglevel error -y -f concat -safe 0 -i "concat.txt" {if:{arg:4}|=|mkv|then:-c:v mpeg2video -q:v 1 -c:a flac|else:{if:{arg:4}|=|mxf|then:-c:v mpeg2video -qscale 1 -qmin 1 -c:a pcm_s16le -ar 48000|else:{if:{arg:4}|=|mov|then:-c:v libx264 -profile:v high422 -level:v 5 -tune zerolatency -q:v 1 -crf 30 -preset superfast -c:a aac -q:a 10 -b:a 192K -aac_coder fast|else:{if:{arg:4}|=|mp4|then:-c:v libx264 -profile:v high422 -level:v 5 -tune zerolatency -q:v 1 -crf 30 -preset superfast -c:a flac}}}} -pix_fmt yuv420p -bufsize 32M -movflags +faststart $output
+ 
+filesize=$(stat -c%s "$output" 2>/dev/null \u007c\u007c echo 0) 
+sizelimit={get:bytes} 
+if [ $filesize -ge $sizelimit ]; then 
+    resp=$(curl -s \
+        -F 'reqtype=fileupload' \
+        -F "fileToUpload=@$output" \
+        https://catbox.moe/user/api.php) 
+    echo "$resp" 
+fi 
+ 
+rm -f concat.txt a.mp4 0.mp4 b.png *.{arg:3} *.ppm *.cube *.trf}
+ 
+{sh:{js:console.log(`{get:code}`)}}
+ 
+{js:let unix = {unix}
+let start = discord.variables.s
+let diff = (unix-start)/1000
+let fileSize = discord.variables.__fileSize
+ 
+fileSize = fileSize >= 1048576 ? `${(fileSize/1048576).toFixed(2)} MB` : `${(fileSize/1024).toFixed(2)} KB`
+ 
+console.log(JSON.stringify({"embeds":[{"author":{"icon_url":`https://cdn.discordapp.com/avatars/${discord.user.id}/${discord.user.avatar}.png?size=1024`,"name":`${discord.user.username}#${discord.user.discriminator}`},"color":0xf26900,"fields":[{"name":`⚠️ Reminder:`,"value":`You should use \`.t sync+\` or \`.t sync+ alt\` to ensure that the video and audio are synced together.`},{"name":`Execution time:`,"value":`${diff.toFixed(3)} seconds`},{"name":`File size:`,"value":`${fileSize}`}],"footer":{"text":`IHTX Custom FFmpeg — TME1999's Take`,"icon_url":`https://cdn.discordapp.com/attachments/1526068771947806832/1527853214920216626/meme.c0f493c5.png?ex=6a5c2bb0&is=6a5ada30&hm=ed464093525b79a71832ba6cb7d2bf3aa503254be5336668a4b75cbc6c493a1d&`}}]}))}}
